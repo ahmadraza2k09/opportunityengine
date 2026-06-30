@@ -1,0 +1,255 @@
+{
+  "workflow": {
+    "id": "0qjCBY6xdJ2rjDuF",
+    "name": "GOE AI Advisor",
+    "active": true,
+    "isArchived": false,
+    "versionId": "0c02582b-c65a-4cf0-b4cf-97b7210ef818",
+    "activeVersionId": "0c02582b-c65a-4cf0-b4cf-97b7210ef818",
+    "triggerCount": 1,
+    "createdAt": "2026-06-30T06:59:23.614Z",
+    "updatedAt": "2026-06-30T07:29:46.477Z",
+    "settings": {
+      "executionOrder": "v1",
+      "availableInMCP": true
+    },
+    "connections": {
+      "Chat Webhook": {
+        "main": [
+          [
+            {
+              "node": "AI Advisor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Advisor": {
+        "main": [
+          [
+            {
+              "node": "Respond to Chat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Advisor",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodes": [
+      {
+        "id": "40ff3dbb-7368-498a-9df1-b614b6fecfc0",
+        "name": "Chat Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          0,
+          112
+        ],
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "goe-chat",
+          "responseMode": "responseNode",
+          "options": {
+            "allowedOrigins": "*"
+          }
+        },
+        "webhookId": "b185c375-2805-4d77-aca2-c504659596d6"
+      },
+      {
+        "id": "235ad0bd-8fda-4bcd-89df-9bf6cf24148f",
+        "name": "AI Advisor",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          224,
+          112
+        ],
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ (($json.body.history || []).map(m => (m.role === 'assistant' ? 'Advisor' : 'User') + ': ' + m.content).join('\\n')) + (($json.body.history || []).length ? '\\n' : '') + 'User: ' + $json.body.message }}",
+          "options": {
+            "systemMessage": "You are the AI advisor for the Global Opportunity Engine, a platform that helps students discover global scholarships, fellowships, internships, grants, exchange programs, and similar opportunities. Give concise, practical, encouraging guidance about opportunities, eligibility, application strategy, deadlines, and step-by-step roadmaps. Ask a clarifying question when the user profile is unclear. If a question is unrelated to education or opportunities, gently steer back. Keep answers focused and easy to read."
+          }
+        }
+      },
+      {
+        "id": "028ae2d3-e717-420c-9b79-94189e613be1",
+        "name": "OpenRouter Chat Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          304,
+          336
+        ],
+        "parameters": {
+          "model": "openai/gpt-4o",
+          "options": {
+            "maxTokens": 800
+          }
+        }
+      },
+      {
+        "id": "36cd01a3-7ab0-4be3-8565-b280ba1c8ef0",
+        "name": "Respond to Chat",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          576,
+          112
+        ],
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { \"output\": $json.output } }}",
+          "options": {
+            "enableStreaming": false
+          }
+        }
+      }
+    ],
+    "activeVersion": {
+      "nodes": [
+        {
+          "id": "40ff3dbb-7368-498a-9df1-b614b6fecfc0",
+          "name": "Chat Webhook",
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2.1,
+          "position": [
+            0,
+            112
+          ],
+          "parameters": {
+            "httpMethod": "POST",
+            "path": "goe-chat",
+            "responseMode": "responseNode",
+            "options": {
+              "allowedOrigins": "*"
+            }
+          },
+          "webhookId": "b185c375-2805-4d77-aca2-c504659596d6"
+        },
+        {
+          "id": "235ad0bd-8fda-4bcd-89df-9bf6cf24148f",
+          "name": "AI Advisor",
+          "type": "@n8n/n8n-nodes-langchain.agent",
+          "typeVersion": 3.1,
+          "position": [
+            224,
+            112
+          ],
+          "parameters": {
+            "promptType": "define",
+            "text": "={{ (($json.body.history || []).map(m => (m.role === 'assistant' ? 'Advisor' : 'User') + ': ' + m.content).join('\\n')) + (($json.body.history || []).length ? '\\n' : '') + 'User: ' + $json.body.message }}",
+            "options": {
+              "systemMessage": "You are the AI advisor for the Global Opportunity Engine, a platform that helps students discover global scholarships, fellowships, internships, grants, exchange programs, and similar opportunities. Give concise, practical, encouraging guidance about opportunities, eligibility, application strategy, deadlines, and step-by-step roadmaps. Ask a clarifying question when the user profile is unclear. If a question is unrelated to education or opportunities, gently steer back. Keep answers focused and easy to read."
+            }
+          }
+        },
+        {
+          "id": "028ae2d3-e717-420c-9b79-94189e613be1",
+          "name": "OpenRouter Chat Model",
+          "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+          "typeVersion": 1,
+          "position": [
+            304,
+            336
+          ],
+          "parameters": {
+            "model": "openai/gpt-4o",
+            "options": {
+              "maxTokens": 800
+            }
+          }
+        },
+        {
+          "id": "36cd01a3-7ab0-4be3-8565-b280ba1c8ef0",
+          "name": "Respond to Chat",
+          "type": "n8n-nodes-base.respondToWebhook",
+          "typeVersion": 1.5,
+          "position": [
+            576,
+            112
+          ],
+          "parameters": {
+            "respondWith": "json",
+            "responseBody": "={{ { \"output\": $json.output } }}",
+            "options": {
+              "enableStreaming": false
+            }
+          }
+        }
+      ],
+      "connections": {
+        "Chat Webhook": {
+          "main": [
+            [
+              {
+                "node": "AI Advisor",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "AI Advisor": {
+          "main": [
+            [
+              {
+                "node": "Respond to Chat",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "OpenRouter Chat Model": {
+          "ai_languageModel": [
+            [
+              {
+                "node": "AI Advisor",
+                "type": "ai_languageModel",
+                "index": 0
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "tags": [],
+    "meta": {
+      "aiBuilderAssisted": true,
+      "builderVariant": "mcp"
+    },
+    "parentFolderId": null,
+    "description": "Chat webhook -> AI Agent (OpenRouter) -> Respond. Powers the Global Opportunity Engine chatbot.",
+    "scopes": [
+      "workflow:create",
+      "workflow:delete",
+      "workflow:execute",
+      "workflow:execute-chat",
+      "workflow:list",
+      "workflow:move",
+      "workflow:publish",
+      "workflow:read",
+      "workflow:share",
+      "workflow:unpublish",
+      "workflow:unshare",
+      "workflow:update",
+      "workflow:updateRedactionSetting"
+    ],
+    "canExecute": true
+  },
+  "triggerInfo": "This workflow has the following trigger(s):\n\n\nWebhook trigger(s):\n\n\n\t\t\t\t<trigger 1>\n\t\t\t\t\t - Node name: Chat Webhook\n\t\t\t\t\t - Base URL: https://n8n.seemaai.co.uk/\n\t\t\t\t\t - Production path: /webhook/goe-chat\n\t\t\t\t\t - Test path: /webhook-test/goe-chat\n\t\t\t\t\t - HTTP Method: POST\n\t\t\t\t\t - Response Mode: Webhook is configured to respond using \"Respond to Webhook\" node.\n\t\t\t\t\t - No credentials required for this webhook.\n\t\t\t\t</trigger 1>"
+}

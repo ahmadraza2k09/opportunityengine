@@ -28,6 +28,8 @@ import {
   ExternalLink,
   Building2,
   Loader2,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 type Screen = "landing" | "profile" | "country" | "analyzing" | "dashboard";
@@ -163,7 +165,7 @@ const MOCK_OPPORTUNITIES = [
 const CHAT_INIT = [
   {
     role: "ai" as const,
-    text: "Hello! I've finished analyzing your profile. You have a strong academic background with excellent research experience. I've identified 23 matching opportunities across 14 countries. Here are your top 6 matches — shall I explain why each one suits you, or would you like help prioritizing?",
+    text: "Hi! I'm your AI advisor. Ask me anything about these opportunities, your eligibility, or how to plan your applications.",
   },
 ];
 
@@ -201,12 +203,12 @@ function Nav({ onStart }: { onStart: () => void }) {
   const [open, setOpen] = useState(false);
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
-      style={{ background: "rgba(230,233,239,0.8)", backdropFilter: "blur(12px)" }}>
-      <div className="flex items-center gap-2.5">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center neo-raised-sm">
-          <ImageWithFallback src={logoSrc} alt="Global Opportunity Engine" className="w-7 h-7 object-contain" />
+      style={{ background: "var(--bar-bg)", backdropFilter: "blur(12px)" }}>
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center neo-raised-sm shrink-0">
+          <ImageWithFallback src={logoSrc} alt="Global Opportunity Engine" className="w-7 h-7 object-contain app-logo" />
         </div>
-        <span className="font-bold text-lg text-slate-800" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <span className="font-bold text-base sm:text-lg text-slate-800 truncate" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
           Global Opportunity Engine
         </span>
       </div>
@@ -252,21 +254,13 @@ function LandingPage({ onStart }: { onStart: () => void }) {
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-8 text-blue-600 neo-pressed-sm">
-            <Sparkles size={12} />
-            AI-Powered Opportunity Intelligence
-          </div>
-
-          {/* Logo mark on neo pad */}
+          {/* Logo mark */}
           <div className="flex justify-center mb-8">
-            <div className="w-28 h-28 rounded-3xl flex items-center justify-center neo-raised-lg">
-              <ImageWithFallback src={logoSrc} alt="Global Opportunity Engine"
-                className="w-20 h-20 object-contain" />
-            </div>
+            <ImageWithFallback src={logoSrc} alt="Global Opportunity Engine"
+              className="w-24 h-24 object-contain app-logo" />
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight"
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight"
             style={{ background: "linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #38BDF8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             Discover Global<br />Opportunities<br />
             <span style={{ background: "linear-gradient(90deg, #2563EB, #38BDF8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -296,7 +290,7 @@ function LandingPage({ onStart }: { onStart: () => void }) {
           </div>
 
           {/* Stats row */}
-          <div className="flex flex-wrap justify-center gap-8 mt-16 pt-8" style={{ borderTop: "1px solid rgba(45,55,72,0.08)" }}>
+          <div className="flex flex-wrap justify-center gap-8 mt-16 pt-8" style={{ borderTop: "1px solid var(--hairline)" }}>
             {[
               { val: "50,000+", label: "Opportunities" },
               { val: "180+", label: "Countries" },
@@ -376,10 +370,10 @@ function LandingPage({ onStart }: { onStart: () => void }) {
       </section>
 
       {/* Footer */}
-      <footer className="py-10 px-6 text-center" style={{ borderTop: "1px solid rgba(45,55,72,0.08)" }}>
+      <footer className="py-10 px-6 text-center" style={{ borderTop: "1px solid var(--hairline)" }}>
         <div className="flex items-center justify-center gap-2 mb-3">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center neo-raised-sm">
-            <ImageWithFallback src={logoSrc} alt="GOE" className="w-5 h-5 object-contain" />
+            <ImageWithFallback src={logoSrc} alt="GOE" className="w-5 h-5 object-contain app-logo" />
           </div>
           <span className="font-bold text-slate-700">Global Opportunity Engine</span>
         </div>
@@ -418,7 +412,7 @@ function ProfilePage({ onNext }: { onNext: () => void }) {
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center neo-raised-sm">
-              <ImageWithFallback src={logoSrc} alt="GOE" className="w-6 h-6 object-contain" />
+              <ImageWithFallback src={logoSrc} alt="GOE" className="w-6 h-6 object-contain app-logo" />
             </div>
             <span className="font-bold text-slate-800 text-sm">Global Opportunity Engine</span>
           </div>
@@ -524,7 +518,7 @@ function CountryPage({ onNext }: { onNext: () => void }) {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-2 mb-8">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center neo-raised-sm">
-            <ImageWithFallback src={logoSrc} alt="GOE" className="w-6 h-6 object-contain" />
+            <ImageWithFallback src={logoSrc} alt="GOE" className="w-6 h-6 object-contain app-logo" />
           </div>
           <span className="font-bold text-slate-800 text-sm">Global Opportunity Engine</span>
         </div>
@@ -642,7 +636,7 @@ function AnalyzingPage({ onDone }: { onDone: () => void }) {
           <div className="absolute w-36 h-36 rounded-full animate-pulse opacity-20"
             style={{ background: "radial-gradient(circle, #38BDF8, transparent)" }} />
           <div className="relative z-10 w-32 h-32 rounded-full flex items-center justify-center neo-raised-lg">
-            <ImageWithFallback src={logoSrc} alt="GOE" className="w-20 h-20 object-contain" />
+            <ImageWithFallback src={logoSrc} alt="GOE" className="w-20 h-20 object-contain app-logo" />
           </div>
         </div>
 
@@ -675,6 +669,7 @@ function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const filters = ["All", "Scholarships", "Fellowships", "Internships", "Exchange"];
@@ -683,22 +678,55 @@ function DashboardPage() {
     ? MOCK_OPPORTUNITIES
     : MOCK_OPPORTUNITIES.filter((o) => o.type.startsWith(activeFilter.slice(0, -1)));
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
+  const sendMessage = async () => {
+    if (!input.trim() || loading) return;
     const userMsg = { role: "user" as const, text: input };
+    const history = messages.map((m) => ({
+      role: m.role === "ai" ? "assistant" : "user",
+      content: m.text,
+    }));
     setMessages((m) => [...m, userMsg]);
     setInput("");
     setLoading(true);
-    setTimeout(() => {
-      const replies = [
-        "Great question! Based on your profile, the Fulbright Scholarship is your strongest match. Your GPA of 3.8 and research publication significantly strengthen your application. I recommend starting your personal statement 4 months before the deadline.",
-        "I'd suggest focusing on the DAAD Research Fellowship first — your background aligns well with their STEM focus, and Germany has a strong AI research ecosystem. Shall I help you outline your research proposal?",
-        "Your profile shows excellent leadership potential. The Chevening Scholarship values future leaders, and your club presidency is a key differentiator. Would you like tips on their interview process?",
-        "Absolutely! I can help you build a 6-month application roadmap. Based on the deadlines, you should prioritize Fulbright (Oct 15), Chevening (Nov 5), then DAAD (Nov 1). Want me to break it down week by week?",
-      ];
-      setMessages((m) => [...m, { role: "ai" as const, text: replies[Math.floor(Math.random() * replies.length)] }]);
+
+    try {
+      const webhookUrl = import.meta.env.VITE_CHAT_WEBHOOK_URL as string | undefined;
+      if (!webhookUrl) {
+        throw new Error("VITE_CHAT_WEBHOOK_URL is not configured");
+      }
+
+      // Browser -> n8n webhook -> AI Agent (OpenRouter). The API key lives in n8n.
+      const res = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg.text, history }),
+      });
+      if (!res.ok) throw new Error(`Webhook responded ${res.status}`);
+
+      // Be tolerant of common n8n response shapes
+      const data = await res.json().catch(() => null);
+      const reply =
+        (typeof data === "string" && data) ||
+        data?.reply ||
+        data?.output ||
+        data?.text ||
+        data?.message ||
+        (Array.isArray(data) ? data[0]?.output ?? data[0]?.text : "") ||
+        "Sorry, I couldn't generate a response.";
+
+      setMessages((m) => [...m, { role: "ai" as const, text: String(reply) }]);
+    } catch (err) {
+      console.error("Chat request failed:", err);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "ai" as const,
+          text: "⚠️ I couldn't reach the AI advisor right now. Please check that the n8n chat webhook is configured (VITE_CHAT_WEBHOOK_URL) and running.",
+        },
+      ]);
+    } finally {
       setLoading(false);
-    }, 1800);
+    }
   };
 
   useEffect(() => {
@@ -709,10 +737,10 @@ function DashboardPage() {
     <div className="min-h-screen bg-background text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       {/* Top bar */}
       <div className="sticky top-0 z-40 flex items-center justify-between px-4 md:px-6 py-3"
-        style={{ background: "rgba(230,233,239,0.9)", backdropFilter: "blur(12px)", boxShadow: "0 4px 12px rgba(194,198,207,0.4)" }}>
+        style={{ background: "var(--bar-bg)", backdropFilter: "blur(12px)", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center neo-raised-sm">
-            <ImageWithFallback src={logoSrc} alt="GOE" className="w-5 h-5 object-contain" />
+            <ImageWithFallback src={logoSrc} alt="GOE" className="w-5 h-5 object-contain app-logo" />
           </div>
           <span className="font-bold text-slate-800 text-sm hidden sm:inline">Global Opportunity Engine</span>
         </div>
@@ -731,8 +759,8 @@ function DashboardPage() {
         {/* Left: Opportunities */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="px-4 md:px-6 py-4" style={{ borderBottom: "1px solid rgba(45,55,72,0.06)" }}>
-            <div className="flex items-center justify-between mb-3">
+          <div className="px-4 md:px-6 py-4" style={{ borderBottom: "1px solid var(--hairline)" }}>
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
               <div>
                 <h2 className="font-extrabold text-slate-800 text-xl">Your Opportunities</h2>
                 <p className="text-xs text-slate-400">Personalized matches based on your profile</p>
@@ -798,7 +826,7 @@ function DashboardPage() {
                   </div>
                 </div>
                 {expandedCard === opp.id && (
-                  <div className="mt-4 pt-4 flex gap-2" style={{ borderTop: "1px solid rgba(45,55,72,0.08)" }}>
+                  <div className="mt-4 pt-4 flex gap-2" style={{ borderTop: "1px solid var(--hairline)" }}>
                     <button className="neo-button flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
                       style={{ color: opp.color }}>
                       View Details
@@ -813,10 +841,16 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Right: AI Chat */}
-        <div className="hidden lg:flex w-96 flex-col"
-          style={{ borderLeft: "1px solid rgba(45,55,72,0.06)", background: "#E9ECF2" }}>
-          <div className="p-4 flex items-center gap-3" style={{ borderBottom: "1px solid rgba(45,55,72,0.06)" }}>
+        {/* Backdrop (mobile drawer) */}
+        {chatOpen && (
+          <div onClick={() => setChatOpen(false)}
+            className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[1px] lg:hidden" />
+        )}
+
+        {/* Right: AI Chat — side panel on desktop, slide-over drawer on mobile */}
+        <div className={`flex flex-col fixed inset-y-0 right-0 z-50 w-full max-w-sm shadow-2xl transition-transform duration-300 lg:static lg:w-96 lg:max-w-none lg:z-auto lg:shadow-none lg:translate-x-0 ${chatOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}`}
+          style={{ borderLeft: "1px solid var(--hairline)", background: "var(--chat-bg)" }}>
+          <div className="p-4 flex items-center gap-3" style={{ borderBottom: "1px solid var(--hairline)" }}>
             <div className="neo-accent w-10 h-10 rounded-full flex items-center justify-center">
               <Bot size={18} className="text-white" />
             </div>
@@ -826,6 +860,10 @@ function DashboardPage() {
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Online
               </div>
             </div>
+            <button onClick={() => setChatOpen(false)}
+              className="lg:hidden ml-auto w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 neo-button">
+              <X size={16} />
+            </button>
           </div>
 
           {/* Messages */}
@@ -860,7 +898,7 @@ function DashboardPage() {
           </div>
 
           {/* Input */}
-          <div className="p-4" style={{ borderTop: "1px solid rgba(45,55,72,0.06)" }}>
+          <div className="p-4" style={{ borderTop: "1px solid var(--hairline)" }}>
             <div className="neo-pressed flex items-center gap-2 px-3 py-2 rounded-xl">
               <input
                 value={input}
@@ -870,16 +908,56 @@ function DashboardPage() {
                 className="flex-1 bg-transparent outline-none text-xs text-slate-700 placeholder-slate-400"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               />
-              <button onClick={sendMessage} disabled={!input.trim()}
-                className={`p-1.5 rounded-lg transition-all ${input.trim() ? "neo-accent" : "opacity-40"}`}>
-                <SendHorizonal size={14} className={input.trim() ? "text-white" : "text-slate-400"} />
+              <button onClick={sendMessage} disabled={!input.trim() || loading}
+                className={`p-1.5 rounded-lg transition-all ${input.trim() && !loading ? "neo-accent" : "opacity-40"}`}>
+                <SendHorizonal size={14} className={input.trim() && !loading ? "text-white" : "text-slate-400"} />
               </button>
             </div>
             <p className="text-[10px] text-slate-400 text-center mt-2">Ask about any opportunity or get personalized advice</p>
           </div>
         </div>
       </div>
+
+      {/* Floating chat trigger (mobile only) */}
+      {!chatOpen && (
+        <button onClick={() => setChatOpen(true)}
+          className="neo-accent lg:hidden fixed bottom-5 right-5 z-30 w-14 h-14 rounded-full flex items-center justify-center text-white">
+          <Bot size={22} />
+        </button>
+      )}
     </div>
+  );
+}
+
+/* ── Theme Toggle (light / dark) ── */
+function ThemeToggle() {
+  const [dark, setDark] = useState(false);
+
+  // Apply stored preference on mount (defaults to light)
+  useEffect(() => {
+    const stored = localStorage.getItem("goe-theme");
+    const isDark = stored === "dark";
+    setDark(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
+  const toggle = () => {
+    setDark((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("goe-theme", next ? "dark" : "light");
+      return next;
+    });
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      aria-label="Toggle dark mode"
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className="neo-button fixed bottom-5 left-5 z-[60] w-12 h-12 rounded-full flex items-center justify-center">
+      {dark ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} className="text-slate-600" />}
+    </button>
   );
 }
 
@@ -887,21 +965,23 @@ function DashboardPage() {
 export default function App() {
   const [screen, setScreen] = useState<Screen>("landing");
 
-  // Set favicon dynamically
+  // Keep document title in sync (favicon is set statically in index.html)
   useEffect(() => {
-    const link: HTMLLinkElement = document.querySelector("link[rel~='icon']") || (() => {
-      const el = document.createElement("link");
-      el.rel = "icon";
-      document.head.appendChild(el);
-      return el;
-    })();
-    link.href = logoSrc;
     document.title = "Global Opportunity Engine";
   }, []);
 
-  if (screen === "landing") return <LandingPage onStart={() => setScreen("profile")} />;
-  if (screen === "profile") return <ProfilePage onNext={() => setScreen("country")} />;
-  if (screen === "country") return <CountryPage onNext={() => setScreen("analyzing")} />;
-  if (screen === "analyzing") return <AnalyzingPage onDone={() => setScreen("dashboard")} />;
-  return <DashboardPage />;
+  const renderScreen = () => {
+    if (screen === "landing") return <LandingPage onStart={() => setScreen("profile")} />;
+    if (screen === "profile") return <ProfilePage onNext={() => setScreen("country")} />;
+    if (screen === "country") return <CountryPage onNext={() => setScreen("analyzing")} />;
+    if (screen === "analyzing") return <AnalyzingPage onDone={() => setScreen("dashboard")} />;
+    return <DashboardPage />;
+  };
+
+  return (
+    <>
+      {renderScreen()}
+      <ThemeToggle />
+    </>
+  );
 }

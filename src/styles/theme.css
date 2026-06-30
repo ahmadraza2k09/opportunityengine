@@ -3,11 +3,11 @@
 :root {
   --font-size: 16px;
   /* ── Light Neomorphism palette ── */
-  --background: #E6E9EF;
+  --background: #E3E8F2;
   --foreground: #2D3748;
-  --card: #E6E9EF;
+  --card: #E3E8F2;
   --card-foreground: #2D3748;
-  --popover: #E6E9EF;
+  --popover: #E3E8F2;
   --popover-foreground: #2D3748;
   --primary: #2563EB;
   --primary-foreground: #ffffff;
@@ -21,7 +21,7 @@
   --destructive-foreground: #ffffff;
   --border: rgba(45, 55, 72, 0.06);
   --input: transparent;
-  --input-background: #E6E9EF;
+  --input-background: #E3E8F2;
   --switch-background: #d1d5dd;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -32,7 +32,7 @@
   --chart-4: #34D399;
   --chart-5: #F59E0B;
   --radius: 0.875rem;
-  --sidebar: #E6E9EF;
+  --sidebar: #E3E8F2;
   --sidebar-foreground: #2D3748;
   --sidebar-primary: #2563EB;
   --sidebar-primary-foreground: #ffffff;
@@ -41,47 +41,70 @@
   --sidebar-border: rgba(45, 55, 72, 0.06);
   --sidebar-ring: rgba(37, 99, 235, 0.35);
 
-  /* ── Neomorphism shadow tokens ── */
-  --neo-bg: #E6E9EF;
-  --neo-shadow-dark: #c2c6cf;
+  /* ── Neomorphism tokens (soft + minimal, blue-tinted) ── */
+  --neo-bg: #E3E8F2;
+  /* Gentle top-lit gradient surface — a subtle skeuomorphic "material" feel */
+  --neo-surface: linear-gradient(145deg, #EBF0F8, #DBE1EE);
+  --neo-shadow-dark: #c6cdde;
   --neo-shadow-light: #ffffff;
+  --neo-hairline: rgba(255, 255, 255, 0.6);
+
+  /* Surface helpers (translucent bars, side panels, hairlines) */
+  --bar-bg: rgba(227, 232, 242, 0.8);
+  --chat-bg: #E9EDF5;
+  --hairline: rgba(45, 55, 72, 0.07);
 }
 
 .dark {
-  --background: #060D1F;
-  --foreground: #E2EAFF;
-  --card: #0C1630;
-  --card-foreground: #E2EAFF;
-  --popover: #0C1630;
-  --popover-foreground: #E2EAFF;
-  --primary: #2563EB;
+  /* ── Dark neumorphism palette (blue-tinted) ── */
+  --background: #1B2336;
+  --foreground: #E6ECF7;
+  --card: #1B2336;
+  --card-foreground: #E6ECF7;
+  --popover: #1B2336;
+  --popover-foreground: #E6ECF7;
+  --primary: #3B82F6;
   --primary-foreground: #ffffff;
-  --secondary: #112044;
+  --secondary: #232C42;
   --secondary-foreground: #93B4FF;
-  --muted: #0E1C3A;
-  --muted-foreground: #6B84B8;
+  --muted: #232C42;
+  --muted-foreground: #94A2BE;
   --accent: #38BDF8;
-  --accent-foreground: #060D1F;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(56, 189, 248, 0.12);
-  --input: rgba(56, 189, 248, 0.08);
-  --ring: rgba(56, 189, 248, 0.4);
+  --border: rgba(255, 255, 255, 0.06);
+  --input: transparent;
+  --input-background: #1B2336;
+  --switch-background: #2A3349;
+  --ring: rgba(59, 130, 246, 0.4);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: #2563EB;
+  --chart-1: #3B82F6;
   --chart-2: #38BDF8;
   --chart-3: #818CF8;
   --chart-4: #34D399;
   --chart-5: #F59E0B;
-  --sidebar: #0C1630;
-  --sidebar-foreground: #E2EAFF;
-  --sidebar-primary: #2563EB;
+  --sidebar: #1B2336;
+  --sidebar-foreground: #E6ECF7;
+  --sidebar-primary: #3B82F6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #112044;
+  --sidebar-accent: #232C42;
   --sidebar-accent-foreground: #93B4FF;
-  --sidebar-border: rgba(56, 189, 248, 0.12);
-  --sidebar-ring: rgba(56, 189, 248, 0.4);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: rgba(59, 130, 246, 0.4);
+
+  /* ── Dark neomorphism tokens ── */
+  --neo-bg: #1B2336;
+  --neo-surface: linear-gradient(145deg, #212A40, #151B2A);
+  --neo-shadow-dark: #10151F;
+  --neo-shadow-light: #263048;
+  --neo-hairline: rgba(255, 255, 255, 0.05);
+
+  /* Surface helpers */
+  --bar-bg: rgba(27, 35, 54, 0.82);
+  --chat-bg: #19202F;
+  --hairline: rgba(255, 255, 255, 0.06);
 }
 
 @theme inline {
@@ -187,85 +210,123 @@
 }
 
 /* ──────────────────────────────────────────────
-   Neomorphism utility classes
-   "Soft UI" — elements share the background color and
-   are shaped by a dual light/dark shadow pair.
+   Soft UI utility classes
+   Minimal neomorphism with a light skeuomorphic touch:
+   gentle dual shadows + a top-lit gradient surface and a
+   hairline highlight, kept subtle (not heavily 3D).
    ────────────────────────────────────────────── */
 .neo-bg {
   background: var(--neo-bg);
 }
 
-/* Raised — element appears extruded from the surface */
+/* Raised — element gently lifts off the surface */
 .neo-raised {
-  background: var(--neo-bg);
-  box-shadow: 6px 6px 12px var(--neo-shadow-dark),
-              -6px -6px 12px var(--neo-shadow-light);
+  background: var(--neo-surface);
+  border-top: 1px solid var(--neo-hairline);
+  box-shadow: 3px 3px 8px var(--neo-shadow-dark),
+              -3px -3px 7px var(--neo-shadow-light);
 }
 
 .neo-raised-sm {
-  background: var(--neo-bg);
-  box-shadow: 4px 4px 8px var(--neo-shadow-dark),
-              -4px -4px 8px var(--neo-shadow-light);
+  background: var(--neo-surface);
+  box-shadow: 2px 2px 5px var(--neo-shadow-dark),
+              -2px -2px 5px var(--neo-shadow-light);
 }
 
 .neo-raised-lg {
-  background: var(--neo-bg);
-  box-shadow: 10px 10px 22px var(--neo-shadow-dark),
-              -10px -10px 22px var(--neo-shadow-light);
+  background: var(--neo-surface);
+  border-top: 1px solid var(--neo-hairline);
+  box-shadow: 6px 6px 16px var(--neo-shadow-dark),
+              -5px -5px 13px var(--neo-shadow-light);
 }
 
-/* Pressed / inset — element appears carved into the surface */
+/* Pressed / inset — element gently sinks into the surface */
 .neo-pressed {
-  background: var(--neo-bg);
-  box-shadow: inset 4px 4px 8px var(--neo-shadow-dark),
-              inset -4px -4px 8px var(--neo-shadow-light);
-}
-
-.neo-pressed-sm {
   background: var(--neo-bg);
   box-shadow: inset 3px 3px 6px var(--neo-shadow-dark),
               inset -3px -3px 6px var(--neo-shadow-light);
 }
 
-/* Interactive raised surface that presses in on click/active */
-.neo-button {
+.neo-pressed-sm {
   background: var(--neo-bg);
-  box-shadow: 6px 6px 12px var(--neo-shadow-dark),
-              -6px -6px 12px var(--neo-shadow-light);
-  transition: box-shadow 0.18s ease, transform 0.18s ease;
-}
-.neo-button:hover {
-  box-shadow: 7px 7px 14px var(--neo-shadow-dark),
-              -7px -7px 14px var(--neo-shadow-light);
-}
-.neo-button:active {
-  box-shadow: inset 4px 4px 8px var(--neo-shadow-dark),
-              inset -4px -4px 8px var(--neo-shadow-light);
+  box-shadow: inset 2px 2px 4px var(--neo-shadow-dark),
+              inset -2px -2px 4px var(--neo-shadow-light);
 }
 
-/* Subtle hover lift for cards (raised, slightly deeper on hover) */
+/* Interactive raised surface that presses in on click/active */
+.neo-button {
+  background: var(--neo-surface);
+  border-top: 1px solid var(--neo-hairline);
+  box-shadow: 3px 3px 8px var(--neo-shadow-dark),
+              -3px -3px 7px var(--neo-shadow-light);
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
+}
+.neo-button:hover {
+  box-shadow: 4px 4px 9px var(--neo-shadow-dark),
+              -4px -4px 8px var(--neo-shadow-light);
+}
+.neo-button:active {
+  box-shadow: inset 3px 3px 6px var(--neo-shadow-dark),
+              inset -3px -3px 6px var(--neo-shadow-light);
+}
+
+/* Subtle hover lift for cards */
 .neo-card {
-  background: var(--neo-bg);
-  box-shadow: 6px 6px 12px var(--neo-shadow-dark),
-              -6px -6px 12px var(--neo-shadow-light);
+  background: var(--neo-surface);
+  border-top: 1px solid var(--neo-hairline);
+  box-shadow: 3px 3px 8px var(--neo-shadow-dark),
+              -3px -3px 7px var(--neo-shadow-light);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 .neo-card:hover {
-  box-shadow: 9px 9px 18px var(--neo-shadow-dark),
-              -9px -9px 18px var(--neo-shadow-light);
+  box-shadow: 5px 5px 12px var(--neo-shadow-dark),
+              -4px -4px 9px var(--neo-shadow-light);
 }
 
-/* Primary accent button — blue gradient sitting on a soft shadow */
+/* Primary accent button — blue gradient with a soft glossy top edge */
 .neo-accent {
   background: linear-gradient(135deg, #2563EB, #38BDF8);
-  box-shadow: 5px 5px 12px var(--neo-shadow-dark),
-              -5px -5px 12px var(--neo-shadow-light);
-  transition: box-shadow 0.18s ease, transform 0.18s ease;
+  box-shadow: 3px 3px 8px var(--neo-shadow-dark),
+              -2px -2px 6px var(--neo-shadow-light),
+              inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
 }
 .neo-accent:hover {
-  box-shadow: 7px 7px 16px rgba(37, 99, 235, 0.35),
-              -6px -6px 14px var(--neo-shadow-light);
+  box-shadow: 4px 4px 11px rgba(37, 99, 235, 0.28),
+              -2px -2px 6px var(--neo-shadow-light),
+              inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 .neo-accent:active {
-  box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.22);
+}
+
+/* ──────────────────────────────────────────────
+   Dark-mode remaps for hardcoded utility colors.
+   Descendant selectors (.dark .text-slate-800) outrank
+   the single-class utilities, so text/bg flip in dark mode.
+   ────────────────────────────────────────────── */
+.dark .text-slate-800 { color: #EAEFF8; }
+.dark .text-slate-700 { color: #D8DFEC; }
+.dark .text-slate-600 { color: #BCC5D8; }
+.dark .text-slate-500 { color: #98A2B8; }
+.dark .text-slate-400 { color: #717C90; }
+.dark .bg-slate-300 { background-color: #39425A; }
+
+/* Brighten accents for contrast on dark surfaces */
+.dark .text-blue-600 { color: #60A5FA; }
+.dark .text-blue-700 { color: #93C5FD; }
+.dark .text-emerald-600 { color: #34D399; }
+
+/* Inputs / placeholders */
+.dark input::placeholder,
+.dark textarea::placeholder { color: #5C6678; }
+
+/* Logo turns white in dark mode (pure white silhouette) */
+.app-logo { transition: filter 0.25s ease; }
+.dark .app-logo { filter: brightness(0) invert(1); }
+
+/* Smooth the light↔dark transition */
+.neo-bg, body, .neo-raised, .neo-raised-sm, .neo-raised-lg,
+.neo-pressed, .neo-pressed-sm, .neo-button, .neo-card {
+  transition: background 0.25s ease, box-shadow 0.25s ease, color 0.25s ease;
 }
