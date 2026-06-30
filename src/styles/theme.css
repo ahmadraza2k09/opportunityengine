@@ -2,43 +2,49 @@
 
 :root {
   --font-size: 16px;
-  --background: #060D1F;
-  --foreground: #E2EAFF;
-  --card: #0C1630;
-  --card-foreground: #E2EAFF;
-  --popover: #0C1630;
-  --popover-foreground: #E2EAFF;
+  /* ── Light Neomorphism palette ── */
+  --background: #E6E9EF;
+  --foreground: #2D3748;
+  --card: #E6E9EF;
+  --card-foreground: #2D3748;
+  --popover: #E6E9EF;
+  --popover-foreground: #2D3748;
   --primary: #2563EB;
   --primary-foreground: #ffffff;
-  --secondary: #112044;
-  --secondary-foreground: #93B4FF;
-  --muted: #0E1C3A;
-  --muted-foreground: #6B84B8;
+  --secondary: #DDE1E9;
+  --secondary-foreground: #2563EB;
+  --muted: #DDE1E9;
+  --muted-foreground: #64748B;
   --accent: #38BDF8;
-  --accent-foreground: #060D1F;
+  --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: rgba(56, 189, 248, 0.12);
-  --input: rgba(56, 189, 248, 0.08);
-  --input-background: #0E1C3A;
-  --switch-background: #1e3a6e;
+  --border: rgba(45, 55, 72, 0.06);
+  --input: transparent;
+  --input-background: #E6E9EF;
+  --switch-background: #d1d5dd;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: rgba(56, 189, 248, 0.4);
+  --ring: rgba(37, 99, 235, 0.35);
   --chart-1: #2563EB;
   --chart-2: #38BDF8;
   --chart-3: #818CF8;
   --chart-4: #34D399;
   --chart-5: #F59E0B;
   --radius: 0.875rem;
-  --sidebar: #0C1630;
-  --sidebar-foreground: #E2EAFF;
+  --sidebar: #E6E9EF;
+  --sidebar-foreground: #2D3748;
   --sidebar-primary: #2563EB;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #112044;
-  --sidebar-accent-foreground: #93B4FF;
-  --sidebar-border: rgba(56, 189, 248, 0.12);
-  --sidebar-ring: rgba(56, 189, 248, 0.4);
+  --sidebar-accent: #DDE1E9;
+  --sidebar-accent-foreground: #2563EB;
+  --sidebar-border: rgba(45, 55, 72, 0.06);
+  --sidebar-ring: rgba(37, 99, 235, 0.35);
+
+  /* ── Neomorphism shadow tokens ── */
+  --neo-bg: #E6E9EF;
+  --neo-shadow-dark: #c2c6cf;
+  --neo-shadow-light: #ffffff;
 }
 
 .dark {
@@ -178,4 +184,88 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+}
+
+/* ──────────────────────────────────────────────
+   Neomorphism utility classes
+   "Soft UI" — elements share the background color and
+   are shaped by a dual light/dark shadow pair.
+   ────────────────────────────────────────────── */
+.neo-bg {
+  background: var(--neo-bg);
+}
+
+/* Raised — element appears extruded from the surface */
+.neo-raised {
+  background: var(--neo-bg);
+  box-shadow: 6px 6px 12px var(--neo-shadow-dark),
+              -6px -6px 12px var(--neo-shadow-light);
+}
+
+.neo-raised-sm {
+  background: var(--neo-bg);
+  box-shadow: 4px 4px 8px var(--neo-shadow-dark),
+              -4px -4px 8px var(--neo-shadow-light);
+}
+
+.neo-raised-lg {
+  background: var(--neo-bg);
+  box-shadow: 10px 10px 22px var(--neo-shadow-dark),
+              -10px -10px 22px var(--neo-shadow-light);
+}
+
+/* Pressed / inset — element appears carved into the surface */
+.neo-pressed {
+  background: var(--neo-bg);
+  box-shadow: inset 4px 4px 8px var(--neo-shadow-dark),
+              inset -4px -4px 8px var(--neo-shadow-light);
+}
+
+.neo-pressed-sm {
+  background: var(--neo-bg);
+  box-shadow: inset 3px 3px 6px var(--neo-shadow-dark),
+              inset -3px -3px 6px var(--neo-shadow-light);
+}
+
+/* Interactive raised surface that presses in on click/active */
+.neo-button {
+  background: var(--neo-bg);
+  box-shadow: 6px 6px 12px var(--neo-shadow-dark),
+              -6px -6px 12px var(--neo-shadow-light);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.neo-button:hover {
+  box-shadow: 7px 7px 14px var(--neo-shadow-dark),
+              -7px -7px 14px var(--neo-shadow-light);
+}
+.neo-button:active {
+  box-shadow: inset 4px 4px 8px var(--neo-shadow-dark),
+              inset -4px -4px 8px var(--neo-shadow-light);
+}
+
+/* Subtle hover lift for cards (raised, slightly deeper on hover) */
+.neo-card {
+  background: var(--neo-bg);
+  box-shadow: 6px 6px 12px var(--neo-shadow-dark),
+              -6px -6px 12px var(--neo-shadow-light);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.neo-card:hover {
+  box-shadow: 9px 9px 18px var(--neo-shadow-dark),
+              -9px -9px 18px var(--neo-shadow-light);
+}
+
+/* Primary accent button — blue gradient sitting on a soft shadow */
+.neo-accent {
+  background: linear-gradient(135deg, #2563EB, #38BDF8);
+  box-shadow: 5px 5px 12px var(--neo-shadow-dark),
+              -5px -5px 12px var(--neo-shadow-light);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.neo-accent:hover {
+  box-shadow: 7px 7px 16px rgba(37, 99, 235, 0.35),
+              -6px -6px 14px var(--neo-shadow-light);
+}
+.neo-accent:active {
+  box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.25);
 }
