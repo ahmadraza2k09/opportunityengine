@@ -116,7 +116,7 @@ function normalizeOpportunities(raw: any): Opportunity[] {
     country: String(o.country ?? ""),
     deadline: String(o.deadline ?? "Check official site"),
     funding: String(o.funding ?? ""),
-    match: Number.isFinite(+o.match) ? Math.round(+o.match) : 0,
+    match: Number.isFinite(+o.match) ? (+o.match <= 1 ? Math.round(+o.match * 100) : Math.round(Math.min(+o.match, 100))) : 0,
     tags: Array.isArray(o.tags) ? o.tags.map(String).slice(0, 4) : [],
     url: o.url ? String(o.url) : undefined,
     why: o.why ? String(o.why) : undefined,
@@ -124,18 +124,40 @@ function normalizeOpportunities(raw: any): Opportunity[] {
   }));
 }
 
-// The opportunities webhook returns JSON text (possibly fenced) — parse defensively.
+// The opportunities webhook returns JSON text (possibly fenced, and the backend
+// stream can get cut off mid-response) — parse defensively, salvaging whatever
+// complete opportunity objects made it through.
 function parseOpportunitiesText(txt: string): Opportunity[] {
   if (!txt) return [];
-  let s = txt.trim();
-  const start = s.indexOf("{");
-  const end = s.lastIndexOf("}");
-  if (start >= 0 && end > start) s = s.slice(start, end + 1);
-  try {
-    return normalizeOpportunities(JSON.parse(s));
-  } catch {
-    return [];
+  const s = txt.trim();
+  // 1) Try a clean full parse of the whole JSON object.
+  const a = s.indexOf("{");
+  const b = s.lastIndexOf("}");
+  if (a >= 0 && b > a) {
+    try {
+      const opps = normalizeOpportunities(JSON.parse(s.slice(a, b + 1)));
+      if (opps.length) return opps;
+    } catch { /* fall through to recovery */ }
   }
+  // 2) Recovery: extract each complete {...} object inside the array, even if
+  //    the response was truncated before the closing braces.
+  const arrStart = s.indexOf("[");
+  if (arrStart < 0) return [];
+  const items: any[] = [];
+  let depth = 0;
+  let objStart = -1;
+  for (let k = arrStart; k < s.length; k++) {
+    const ch = s[k];
+    if (ch === "{") { if (depth === 0) objStart = k; depth++; }
+    else if (ch === "}") {
+      depth--;
+      if (depth === 0 && objStart >= 0) {
+        try { items.push(JSON.parse(s.slice(objStart, k + 1))); } catch { /* skip partial */ }
+        objStart = -1;
+      }
+    }
+  }
+  return items.length ? normalizeOpportunities({ opportunities: items }) : [];
 }
 
 // fetch with an abort timeout so the UI never hangs forever on a stuck backend.
@@ -353,9 +375,6 @@ function LandingPage({ onStart }: { onStart: () => void }) {
       {/* CTA Banner */}
       <section className="py-20 px-6">
         <div className="neo-raised-lg max-w-3xl mx-auto text-center p-12 rounded-[2rem] relative overflow-hidden">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 neo-raised-sm">
-            <Sparkles size={28} className="text-blue-600" />
-          </div>
           <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4">Ready to find your opportunity?</h2>
           <p className="text-slate-500 mb-8 text-lg">No signup. No login. No forms. Just tell us about yourself.</p>
           <button
@@ -461,7 +480,7 @@ function ProfilePage({ value, onChange, onNext }: { value: string; onChange: (v:
         />
         <div className="flex items-center justify-between mt-2 mb-6">
           <span className="text-xs text-slate-400">{text.length} characters</span>
-          <span className="text-xs text-slate-400">Minimum 200 characters recommended</span>
+          <span className="text-xs text-slate-400">Write as much as you like — more detail means better matches</span>
         </div>
 
         {/* AI hint */}
@@ -486,8 +505,8 @@ function ProfilePage({ value, onChange, onNext }: { value: string; onChange: (v:
 
         <button
           onClick={onNext}
-          disabled={text.length < 50}
-          className={`w-full py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all ${text.length >= 50 ? "neo-accent text-white" : "neo-pressed text-slate-400 cursor-not-allowed"}`}>
+          disabled={text.trim().length === 0}
+          className={`w-full py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all ${text.trim().length > 0 ? "neo-accent text-white" : "neo-pressed text-slate-400 cursor-not-allowed"}`}>
           Continue
           <ArrowRight size={20} />
         </button>
