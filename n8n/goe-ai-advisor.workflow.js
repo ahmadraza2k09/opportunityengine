@@ -17,19 +17,17 @@ const chatWebhook = trigger({
   output: [{ body: { message: 'Hello', history: [] } }],
 });
 
-// 2) OpenRouter chat model (the API key lives in this n8n credential, not the frontend).
-const openRouterModel = languageModel({
-  type: '@n8n/n8n-nodes-langchain.lmChatOpenRouter',
-  version: 1,
+// 2) Google Gemini chat model (free tier; API key lives in the n8n credential).
+const geminiModel = languageModel({
+  type: '@n8n/n8n-nodes-langchain.lmChatGoogleGemini',
+  version: 1.1,
   config: {
-    name: 'OpenRouter Chat Model',
-    // maxTokens is capped so the request stays within the account balance
-    // (the earlier 402 was only due to the default 16384-token request).
+    name: 'Gemini Chat Model',
     parameters: {
-      model: 'openai/gpt-4o',
-      options: { maxTokens: 800 },
+      modelName: 'models/gemini-2.5-flash',
+      options: { temperature: 0.4, maxOutputTokens: 1024 },
     },
-    credentials: { openRouterApi: newCredential('OpenRouter') },
+    credentials: { googlePalmApi: newCredential('Google Gemini') },
     position: [340, 520],
   },
 });
@@ -49,7 +47,7 @@ const aiAdvisor = node({
           'You are the AI advisor for the Global Opportunity Engine, a platform that helps students discover global scholarships, fellowships, internships, grants, exchange programs, and similar opportunities. Give concise, practical, encouraging guidance about opportunities, eligibility, application strategy, deadlines, and step-by-step roadmaps. Ask a clarifying question when the user profile is unclear. If a question is unrelated to education or opportunities, gently steer back. Keep answers focused and easy to read.',
       },
     },
-    subnodes: { model: openRouterModel },
+    subnodes: { model: geminiModel },
     position: [620, 300],
   },
   output: [{ output: 'AI response text' }],

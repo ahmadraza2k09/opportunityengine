@@ -1,55 +1,50 @@
-# GOE AI Advisor — n8n workflow
+# Global Opportunity Engine — n8n workflows
 
-The agentic backend for the dashboard chatbot. The browser never sees the
-OpenRouter API key — it only calls the n8n webhook; n8n holds the key as a
-credential and runs the AI agent.
+Two agentic backends. The browser never sees any API key — it only calls n8n
+webhooks; n8n holds the Gemini + Tavily keys as credentials/inline and runs the
+AI. Both use **Google Gemini (`models/gemini-2.5-flash`, free tier)**.
 
-## Flow
+## 1. Chat advisor — `goe-ai-advisor.workflow.js`
 
 ```
-Browser chat  ──POST {message, history}──▶  Webhook (/goe-chat)
-                                               │
-                                               ▼
-                                          AI Agent (advisor persona)
-                                               │  uses
-                                               ▼
-                                     OpenRouter Chat Model (openai/gpt-4o)
-                                               │
-                                               ▼
-                                     Respond to Webhook  ──▶  { "output": "..." }
+Browser chat ──POST {message, history}──▶ Webhook (/goe-chat)
+                                             └▶ AI Agent (Gemini) ─▶ Respond { output }
 ```
+- Workflow id: `0qjCBY6xdJ2rjDuF` · webhook: `/webhook/goe-chat`
+- Frontend env: `VITE_CHAT_WEBHOOK_URL`
 
-## Deployment
+## 2. Opportunity finder — `goe-opportunities.workflow.js`
 
-- **n8n workflow:** `GOE AI Advisor` — https://n8n.seemaai.co.uk/workflow/0qjCBY6xdJ2rjDuF
-- **Production webhook:** `https://n8n.seemaai.co.uk/webhook/goe-chat`
-- **Frontend wiring:** `VITE_CHAT_WEBHOOK_URL` in `.env` (see `.env.example`)
-- **Model:** `openai/gpt-4o`, `maxTokens: 800` (cap keeps each request within the
-  OpenRouter balance — the affordability check is `prompt + maxTokens` priced at
-  the model rate). Lower the model to `openai/gpt-4o-mini` if credits run low.
+```
+Browser ──POST {profile, countries, degree}──▶ Webhook (/goe-opportunities)
+                                                  └▶ Tavily web search (HTTP, search_depth: advanced)
+                                                       └▶ AI Agent (Gemini) — builds opportunities
+                                                          ONLY from the search results (grounded)
+                                                            └▶ Respond (JSON text the frontend parses)
+```
+- Workflow id: `rtSs20wXandDsf0E` · webhook: `/webhook/goe-opportunities`
+- Frontend env: `VITE_OPPORTUNITIES_WEBHOOK_URL`
+- Returns: `{ "opportunities": [ { title, org, type, country, deadline, funding, match, tags[], url, why } ] }`
+- The agent is instructed to use ONLY the live Tavily results as its source of
+  truth and to use the real official `url` from those results — this is what
+  keeps the opportunities real and current rather than hallucinated.
 
-## Files
+## Credentials (created in the n8n UI — not in this repo)
 
-| File | Purpose |
-|------|---------|
-| `goe-ai-advisor.workflow.js` | Source of truth — n8n Workflow SDK code. Edit this, then redeploy. |
-| `goe-ai-advisor.export.json` | Read-only export of the live workflow (backup / portability). |
+- **Google Gemini(PaLM) Api** — used by both workflows' Gemini model nodes.
+- **Tavily** — the API key is sent inline by the `Tavily Search` HTTP node. In
+  this repo copy it is **redacted** (`tvly-dev-REDACTED-...`); the live workflow
+  on n8n holds the real key. Prefer moving it to a Header Auth credential.
 
-## Redeploy (via the n8n MCP server)
+## Notes
 
-The workflow is built and managed through the n8n MCP server (`n8n-mcp` in
-`.mcp.json`). To apply changes to `goe-ai-advisor.workflow.js`:
+- No structured-output parser: the n8n Gemini node throws `reading 'parts'` when
+  combined with the structured/function-calling parser, so the agent returns
+  strict JSON text and the frontend parses it (`parseOpportunitiesText`).
+- Model `maxOutputTokens` is capped (1024–2048) for speed/cost.
+- Webhooks are public (CORS `*`). For production add a shared-secret header check
+  and restrict `allowedOrigins` to the real site domain.
 
-1. `validate_workflow` with the code
-2. `update_workflow` with `workflowId: 0qjCBY6xdJ2rjDuF` and the code
-3. `publish_workflow` with the same `workflowId`
+## Redeploy (n8n MCP)
 
-## Notes / TODO
-
-- The webhook is currently public (CORS `*`, no auth). Anyone with the URL can
-  call it and consume OpenRouter credits. For production, add a shared-secret
-  header check inside n8n and restrict `allowedOrigins` to the real site domain.
-- The OpenRouter API key lives in the n8n credential **"OpenRouter account"**,
-  not in this repo or the frontend.
-- Conversation context is preserved by folding `history` into the agent prompt
-  (stateless). A dedicated memory node + session id would be a cleaner upgrade.
+Edit the `.workflow.js`, then: `validate_workflow` → `update_workflow {workflowId, code}` → `publish_workflow {workflowId}`.

@@ -87,87 +87,85 @@ const DEGREES = [
   "PhD / Doctorate", "Postdoctoral Research", "Professional Certificate",
 ];
 
-const MOCK_OPPORTUNITIES = [
-  {
-    id: 1,
-    title: "Fulbright Scholarship Program",
-    org: "U.S. Department of State",
-    type: "Scholarship",
-    country: "USA",
-    deadline: "Oct 15, 2025",
-    funding: "Full Funding",
-    match: 94,
-    tags: ["Graduate", "Research", "International"],
-    color: "#2563EB",
-  },
-  {
-    id: 2,
-    title: "DAAD Research Fellowship",
-    org: "German Academic Exchange Service",
-    type: "Fellowship",
-    country: "Germany",
-    deadline: "Nov 1, 2025",
-    funding: "€1,200/month",
-    match: 91,
-    tags: ["Research", "STEM", "Masters"],
-    color: "#818CF8",
-  },
-  {
-    id: 3,
-    title: "Chevening Scholarships",
-    org: "UK Foreign Office",
-    type: "Scholarship",
-    country: "UK",
-    deadline: "Nov 5, 2025",
-    funding: "Full Funding",
-    match: 88,
-    tags: ["Masters", "Leadership", "International"],
-    color: "#38BDF8",
-  },
-  {
-    id: 4,
-    title: "Google Summer of Code",
-    org: "Google",
-    type: "Internship",
-    country: "Remote",
-    deadline: "Apr 2, 2025",
-    funding: "$3,000–$6,600",
-    match: 85,
-    tags: ["Tech", "Open Source", "Students"],
-    color: "#34D399",
-  },
-  {
-    id: 5,
-    title: "Commonwealth Scholarship",
-    org: "Commonwealth Scholarship Commission",
-    type: "Scholarship",
-    country: "UK",
-    deadline: "Dec 15, 2025",
-    funding: "Full Funding",
-    match: 82,
-    tags: ["PhD", "Graduate", "Commonwealth"],
-    color: "#F59E0B",
-  },
-  {
-    id: 6,
-    title: "Erasmus+ Exchange Program",
-    org: "European Commission",
-    type: "Exchange",
-    country: "Europe",
-    deadline: "Jan 31, 2026",
-    funding: "€800–€1,300/month",
-    match: 79,
-    tags: ["Exchange", "Europe", "Students"],
-    color: "#F472B6",
-  },
-];
+type Opportunity = {
+  id: number;
+  title: string;
+  org: string;
+  type: string;
+  country: string;
+  deadline: string;
+  funding: string;
+  match: number;
+  tags: string[];
+  url?: string;
+  why?: string;
+  color: string;
+};
 
-const CHAT_INIT = [
-  {
-    role: "ai" as const,
-    text: "Hi! I'm your AI advisor. Ask me anything about these opportunities, your eligibility, or how to plan your applications.",
-  },
-];
+const OPP_COLORS = ["#2563EB", "#818CF8", "#34D399", "#F59E0B", "#38BDF8", "#F472B6", "#A78BFA", "#FB923C"];
+
+// Map the AI/n8n response (real, web-grounded opportunities) into card data.
+function normalizeOpportunities(raw: any): Opportunity[] {
+  const list = Array.isArray(raw) ? raw : raw?.opportunities ?? raw?.output?.opportunities ?? [];
+  if (!Array.isArray(list)) return [];
+  return list.map((o: any, i: number) => ({
+    id: i + 1,
+    title: String(o.title ?? "Untitled opportunity"),
+    org: String(o.org ?? o.organization ?? ""),
+    type: String(o.type ?? "Opportunity"),
+    country: String(o.country ?? ""),
+    deadline: String(o.deadline ?? "Check official site"),
+    funding: String(o.funding ?? ""),
+    match: Number.isFinite(+o.match) ? Math.round(+o.match) : 0,
+    tags: Array.isArray(o.tags) ? o.tags.map(String).slice(0, 4) : [],
+    url: o.url ? String(o.url) : undefined,
+    why: o.why ? String(o.why) : undefined,
+    color: OPP_COLORS[i % OPP_COLORS.length],
+  }));
+}
+
+// The opportunities webhook returns JSON text (possibly fenced) — parse defensively.
+function parseOpportunitiesText(txt: string): Opportunity[] {
+  if (!txt) return [];
+  let s = txt.trim();
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start >= 0 && end > start) s = s.slice(start, end + 1);
+  try {
+    return normalizeOpportunities(JSON.parse(s));
+  } catch {
+    return [];
+  }
+}
+
+// fetch with an abort timeout so the UI never hangs forever on a stuck backend.
+async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Fetch real opportunities from the n8n agentic workflow (Tavily + Gemini).
+async function fetchOpportunities(
+  profile: string,
+  countries: string[],
+  degree: string,
+): Promise<Opportunity[]> {
+  const url = import.meta.env.VITE_OPPORTUNITIES_WEBHOOK_URL as string | undefined;
+  if (!url) throw new Error("VITE_OPPORTUNITIES_WEBHOOK_URL is not configured");
+  const res = await fetchWithTimeout(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ profile, countries, degree }),
+  }, 70000);
+  if (!res.ok) throw new Error(`Opportunities webhook responded ${res.status}`);
+  const txt = await res.text();
+  return parseOpportunitiesText(txt);
+}
 
 const GUIDELINE_CHIPS = [
   "Country & Age", "Current Degree", "GPA / Grades", "IELTS / TOEFL",
@@ -402,8 +400,9 @@ function StepBar({ step }: { step: number }) {
 }
 
 /* ── Profile Summary Page ── */
-function ProfilePage({ onNext }: { onNext: () => void }) {
-  const [text, setText] = useState("");
+function ProfilePage({ value, onChange, onNext }: { value: string; onChange: (v: string) => void; onNext: () => void }) {
+  const text = value;
+  const setText = onChange;
   const completeness = countCompleteness(text);
 
   return (
@@ -498,10 +497,18 @@ function ProfilePage({ onNext }: { onNext: () => void }) {
 }
 
 /* ── Country & Degree Page ── */
-function CountryPage({ onNext }: { onNext: () => void }) {
+function CountryPage({ countries, setCountries, degree, setDegree, onNext }: {
+  countries: string[];
+  setCountries: (v: string[] | ((prev: string[]) => string[])) => void;
+  degree: string;
+  setDegree: (v: string) => void;
+  onNext: () => void;
+}) {
   const [countrySearch, setCountrySearch] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
-  const [selectedDegree, setSelectedDegree] = useState("");
+  const selectedCountries = countries;
+  const setSelectedCountries = setCountries;
+  const selectedDegree = degree;
+  const setSelectedDegree = setDegree;
 
   const filtered = COUNTRIES.filter((c) =>
     c.toLowerCase().includes(countrySearch.toLowerCase())
@@ -597,25 +604,56 @@ function CountryPage({ onNext }: { onNext: () => void }) {
 }
 
 /* ── AI Analyzing Page ── */
-function AnalyzingPage({ onDone }: { onDone: () => void }) {
+function AnalyzingPage({ profile, countries, degree, onDone }: {
+  profile: string;
+  countries: string[];
+  degree: string;
+  onDone: (opps: Opportunity[], error: string | null) => void;
+}) {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState(0);
+  const resultRef = useRef<{ opps: Opportunity[]; error: string | null } | null>(null);
+  const doneRef = useRef(false);
 
   const phases = [
     "Reading your profile summary...",
-    "Identifying your strengths and achievements...",
-    "Evaluating your readiness score...",
-    "Scanning 50,000+ global opportunities...",
-    "Matching opportunities to your profile...",
-    "Building your personalized roadmap...",
+    "Identifying your strengths and goals...",
+    "Searching the web for live opportunities...",
+    "Matching real opportunities to your profile...",
+    "Verifying details and deadlines...",
+    "Building your personalized list...",
     "Almost there...",
   ];
 
+  // Kick off the real AI + web-search call once.
+  useEffect(() => {
+    let cancelled = false;
+    fetchOpportunities(profile, countries, degree)
+      .then((opps) => {
+        if (!cancelled) resultRef.current = { opps, error: opps.length ? null : "No matching opportunities were found. Try adding more detail to your profile." };
+      })
+      .catch((e) => {
+        if (!cancelled) resultRef.current = { opps: [], error: String(e?.message || e) };
+      });
+    return () => { cancelled = true; };
+  }, [profile, countries, degree]);
+
+  // Climb to 92%, hold until the real results land, then finish and navigate.
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((p) => {
-        if (p >= 100) { clearInterval(interval); setTimeout(onDone, 600); return 100; }
-        return p + 1.4;
+        const ready = resultRef.current !== null;
+        if (ready && p >= 100) {
+          clearInterval(interval);
+          if (!doneRef.current) {
+            doneRef.current = true;
+            const r = resultRef.current!;
+            setTimeout(() => onDone(r.opps, r.error), 400);
+          }
+          return 100;
+        }
+        if (!ready && p >= 92) return 92;
+        return Math.min(ready ? 100 : 92, p + 1.4);
       });
     }, 60);
     return () => clearInterval(interval);
@@ -663,8 +701,13 @@ function AnalyzingPage({ onDone }: { onDone: () => void }) {
 }
 
 /* ── Dashboard Page ── */
-function DashboardPage() {
-  const [messages, setMessages] = useState(CHAT_INIT);
+function DashboardPage({ opportunities, oppError }: { opportunities: Opportunity[]; oppError: string | null }) {
+  const [messages, setMessages] = useState(() => [{
+    role: "ai" as const,
+    text: opportunities.length
+      ? `I've found ${opportunities.length} real opportunities matched to your profile. Ask me anything about them, your eligibility, or how to plan your applications.`
+      : "Hi! I'm your AI advisor. Ask me anything about opportunities, your eligibility, or how to plan your applications.",
+  }]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All");
@@ -675,8 +718,8 @@ function DashboardPage() {
   const filters = ["All", "Scholarships", "Fellowships", "Internships", "Exchange"];
 
   const filtered = activeFilter === "All"
-    ? MOCK_OPPORTUNITIES
-    : MOCK_OPPORTUNITIES.filter((o) => o.type.startsWith(activeFilter.slice(0, -1)));
+    ? opportunities
+    : opportunities.filter((o) => o.type.startsWith(activeFilter.slice(0, -1)));
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
@@ -695,12 +738,12 @@ function DashboardPage() {
         throw new Error("VITE_CHAT_WEBHOOK_URL is not configured");
       }
 
-      // Browser -> n8n webhook -> AI Agent (OpenRouter). The API key lives in n8n.
-      const res = await fetch(webhookUrl, {
+      // Browser -> n8n webhook -> AI Agent (Gemini). The API key lives in n8n.
+      const res = await fetchWithTimeout(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg.text, history }),
-      });
+      }, 45000);
       if (!res.ok) throw new Error(`Webhook responded ${res.status}`);
 
       // Be tolerant of common n8n response shapes
@@ -750,7 +793,7 @@ function DashboardPage() {
             <span className="text-emerald-600 font-medium">AI Active</span>
           </div>
           <div className="px-3 py-1.5 rounded-full text-xs text-slate-500 neo-pressed-sm">
-            23 Opportunities Found
+            {opportunities.length} Opportunities Found
           </div>
         </div>
       </div>
@@ -763,11 +806,11 @@ function DashboardPage() {
             <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
               <div>
                 <h2 className="font-extrabold text-slate-800 text-xl">Your Opportunities</h2>
-                <p className="text-xs text-slate-400">Personalized matches based on your profile</p>
+                <p className="text-xs text-slate-400">Real matches sourced live from the web for your profile</p>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-500 neo-pressed-sm px-3 py-2 rounded-full">
-                <BarChart3 size={12} />
-                Readiness Score: <span className="text-blue-600 font-bold">78/100</span>
+                <Globe size={12} className="text-blue-600" />
+                Live web results
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -786,6 +829,18 @@ function DashboardPage() {
           {/* Cards */}
           <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-4"
             style={{ scrollbarWidth: "none" }}>
+            {opportunities.length === 0 && (
+              <div className="neo-raised rounded-2xl p-6 text-center text-sm text-slate-600">
+                <Globe size={26} className="text-blue-600 mx-auto mb-3" />
+                <p className="font-semibold text-slate-800 mb-1">No opportunities to show</p>
+                <p className="text-slate-500">{oppError || "We couldn't find matches. Go back and add more detail to your profile, then try again."}</p>
+              </div>
+            )}
+            {opportunities.length > 0 && filtered.length === 0 && (
+              <div className="neo-raised rounded-2xl p-5 text-center text-sm text-slate-500">
+                No {activeFilter.toLowerCase()} in your list — try another filter.
+              </div>
+            )}
             {filtered.map((opp) => (
               <div key={opp.id}
                 className={`rounded-2xl p-4 cursor-pointer transition-all ${expandedCard === opp.id ? "neo-pressed" : "neo-card"}`}
@@ -826,14 +881,24 @@ function DashboardPage() {
                   </div>
                 </div>
                 {expandedCard === opp.id && (
-                  <div className="mt-4 pt-4 flex gap-2" style={{ borderTop: "1px solid var(--hairline)" }}>
-                    <button className="neo-button flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                      style={{ color: opp.color }}>
-                      View Details
-                    </button>
-                    <button className="neo-button px-4 py-2.5 rounded-xl text-sm font-medium text-slate-500 flex items-center justify-center">
-                      <ExternalLink size={14} />
-                    </button>
+                  <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--hairline)" }}>
+                    {opp.why && (
+                      <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                        <span className="font-semibold text-slate-700">Why this fits: </span>{opp.why}
+                      </p>
+                    )}
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                      {opp.url ? (
+                        <a href={opp.url} target="_blank" rel="noopener noreferrer"
+                          className="neo-accent flex-1 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2">
+                          Visit official site <ExternalLink size={14} />
+                        </a>
+                      ) : (
+                        <span className="neo-pressed flex-1 py-2.5 rounded-xl text-sm font-semibold text-slate-400 text-center">
+                          No link available
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -964,6 +1029,11 @@ function ThemeToggle() {
 /* ── Root App ── */
 export default function App() {
   const [screen, setScreen] = useState<Screen>("landing");
+  const [profile, setProfile] = useState("");
+  const [countries, setCountries] = useState<string[]>([]);
+  const [degree, setDegree] = useState("");
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [oppError, setOppError] = useState<string | null>(null);
 
   // Keep document title in sync (favicon is set statically in index.html)
   useEffect(() => {
@@ -972,10 +1042,17 @@ export default function App() {
 
   const renderScreen = () => {
     if (screen === "landing") return <LandingPage onStart={() => setScreen("profile")} />;
-    if (screen === "profile") return <ProfilePage onNext={() => setScreen("country")} />;
-    if (screen === "country") return <CountryPage onNext={() => setScreen("analyzing")} />;
-    if (screen === "analyzing") return <AnalyzingPage onDone={() => setScreen("dashboard")} />;
-    return <DashboardPage />;
+    if (screen === "profile") return <ProfilePage value={profile} onChange={setProfile} onNext={() => setScreen("country")} />;
+    if (screen === "country") return <CountryPage countries={countries} setCountries={setCountries} degree={degree} setDegree={setDegree} onNext={() => setScreen("analyzing")} />;
+    if (screen === "analyzing") return (
+      <AnalyzingPage
+        profile={profile}
+        countries={countries}
+        degree={degree}
+        onDone={(opps, error) => { setOpportunities(opps); setOppError(error); setScreen("dashboard"); }}
+      />
+    );
+    return <DashboardPage opportunities={opportunities} oppError={oppError} />;
   };
 
   return (
